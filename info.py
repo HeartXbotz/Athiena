@@ -4,6 +4,7 @@
 
 
 import re
+import os
 from os import environ
 from Script import script 
 
@@ -101,7 +102,7 @@ SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'TGHelpingGroup') # Support Chat Link
 
 # True Or False
 AI_SPELL_CHECK = bool(environ.get('AI_SPELL_CHECK', True))
-PM_SEARCH = bool(environ.get('PM_SEARCH', True))
+PM_SEARCH = bool(environ.get('PM_SEARCH', False))
 BUTTON_MODE = bool(environ.get('BUTTON_MODE', True))
 MAX_BTN = bool(environ.get('MAX_BTN', True))
 IS_TUTORIAL = bool(environ.get('IS_TUTORIAL', False))
@@ -197,7 +198,13 @@ else:
     FILE_DB_URI = F_DB_URI        # This Db Is For File Data Store
     SEC_FILE_DB_URI = S_DB_URI    # This Db is for File Data Store When First Db Is Going To Be Full.
 
+#Newfeatures vars developer - Anshvachhani99 ✨🌸
+DIRECT_GEN_DB = int(os.environ.get("DIRECT_GEN_DB", "-1002391269521"))
+DIRECT_GEN_URL = os.environ.get("DIRECT_GEN_URL", "https://premiumbot.koyeb.app/")
+DIRECT_GEN = bool(DIRECT_GEN_DB and DIRECT_GEN_URL)
 
-# Don't Remove Credit @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+POST_MODE= bool(environ.get('POST_MODE', True))
+POST_SHORT_API = environ.get('POST_SHORT_API', '')
+POST_SHORT_URL = environ.get('POST_SHORT_URL', '')
+
+HOW_TO_POST_SHORT = environ.get('HOW_TO_POST_SHORT', 'https://t.me/Howtodowloa/9')
