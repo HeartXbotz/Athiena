@@ -10,6 +10,7 @@ from pyrogram import enums
 from pyrogram.errors import *
 from typing import Union
 from Script import script
+from urllib.parse import quote_plus
 from datetime import datetime, date
 from typing import List
 from database.users_chats_db import db
@@ -736,3 +737,86 @@ async def get_seconds(time_string):
         return value * 86400 * 365
     else:
         return 0
+
+
+#POST FEATURES 
+
+def humanbytes(size):
+    # https://stackoverflow.com/a/49361727/4723940
+    # 2**10 = 1024
+    if not size:
+        return ""
+    power = 2**10
+    n = 0
+    Dic_powerN = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
+    while size > power:
+        size /= power
+        n += 1
+    return f"{str(round(size, 2))} {Dic_powerN[n]}B"
+
+def get_media_from_message(message: "Message") :
+    media_types = (
+        "audio",
+        "document",
+        "photo",
+        "sticker",
+        "animation",
+        "video",
+        "voice",
+        "video_note",
+    )
+    for attr in media_types:
+        media = getattr(message, attr, None)
+        if media:
+            return media
+            
+def clean_title(title_clean):
+    # Regular expression to match the title and year with optional text afterwards
+    match = re.match(r'^(.*?)(\d{4})(?:\s.*|$)', title_clean, re.IGNORECASE)
+    if match:
+        
+        title_cleaned = match.group(1).strip()
+        year = match.group(2).strip()
+        return f"{title_cleaned.capitalize()} {year}"  
+    return title_clean 
+
+def get_name(media_msg: Message) -> str:
+    media = get_media_from_message(media_msg)
+    return str(getattr(media, "file_name", "None"))
+
+def get_hash(media_msg: Message) -> str:
+    media = get_media_from_message(media_msg)
+    return getattr(media, "file_unique_id", "")[:6]
+
+async def gen_link(log_msg: Message):
+    """Generate Text for Stream Link, Reply Text and reply_markup
+    r : return page_link, stream_link
+    page_link : stream page link
+    stream_link : download link
+    """
+    page_link = f"{DIRECT_GEN_URL}watch/{get_hash(log_msg)}{log_msg.id}"
+    stream_link = f"{DIRECT_GEN_URL}{log_msg.id}/{quote_plus(get_name(log_msg))}?hash={get_hash(log_msg)}"
+    # short    
+    return page_link, stream_link
+
+async def short_link(link):
+    if not POST_MODE:
+        return link
+    # Replace the placeholders with your actual API key and base URL
+    api_key = POST_SHORT_API
+    base_site = POST_SHORT_URL
+
+    if not (api_key and base_site):
+        return link
+
+    shortzy = Shortzy(api_key, base_site)
+    short_link = await shortzy.convert(link)
+
+    return short_link
+
+async def delete_previous_reply(chat_id):
+    if chat_id in user_states and "last_reply" in user_states[chat_id]:
+        try:
+            await user_states[chat_id]["last_reply"].delete()
+        except Exception as e:
+            print(f"Failed to delete message: {e}")
