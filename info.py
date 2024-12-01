@@ -204,7 +204,7 @@ DIRECT_GEN_URL = os.environ.get("DIRECT_GEN_URL", "https://premiumbot.koyeb.app/
 DIRECT_GEN = bool(DIRECT_GEN_DB and DIRECT_GEN_URL)
 
 POST_MODE= bool(environ.get('POST_MODE', True))
-POST_SHORT_API = environ.get('POST_SHORT_API', 'modijiurl.com')
-POST_SHORT_URL = environ.get('POST_SHORT_URL', '69bfe45fc35b6b3178b4b95de9ef1db14a746ce7')
+POST_SHORT_API = environ.get('POST_SHORT_API', 'onepageyam.com')
+POST_SHORT_URL = environ.get('POST_SHORT_URL', 'f2de9ea6eceed6dbab222ff9d35946a11f034360')
 
 HOW_TO_POST_SHORT = environ.get('HOW_TO_POST_SHORT', 'https://t.me/How_To_Get_Movie')
