@@ -58,7 +58,7 @@ SUPPORT_CHAT_ID = int(support_chat_id) if support_chat_id and id_pattern.search(
 INDEX_REQ_CHANNEL = int(environ.get('INDEX_REQ_CHANNEL', LOG_CHANNEL))
 
 # This Channel Is For /batch command file store.
-FILE_STORE_CHANNEL = [int(ch) for ch in (environ.get('FILE_STORE_CHANNEL', '-1002389516001')).split()]
+FILE_STORE_CHANNEL = [int(ch) for ch in (environ.get('FILE_STORE_CHANNEL', '-1002323592481')).split()]
 
 # This Channel Is For Delete Index File, Forward Your File In This Channel Which You Want To Delete Then Bot Automatically Delete That File From Database.
 DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch for dch in environ.get('DELETE_CHANNELS', '0').split()]
@@ -199,7 +199,7 @@ else:
     SEC_FILE_DB_URI = S_DB_URI    # This Db is for File Data Store When First Db Is Going To Be Full.
 
 #Newfeatures vars developer - Anshvachhani99 ✨🌸
-DIRECT_GEN_DB = int(os.environ.get("DIRECT_GEN_DB", "-1002389516001"))
+DIRECT_GEN_DB = int(os.environ.get("DIRECT_GEN_DB", "-1002323592481"))
 DIRECT_GEN_URL = os.environ.get("DIRECT_GEN_URL", "https://premiumbot.koyeb.app/")
 DIRECT_GEN = bool(DIRECT_GEN_DB and DIRECT_GEN_URL)
 
