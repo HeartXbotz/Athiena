@@ -198,7 +198,7 @@ else:
     FILE_DB_URI = F_DB_URI        # This Db Is For File Data Store
     SEC_FILE_DB_URI = S_DB_URI    # This Db is for File Data Store When First Db Is Going To Be Full.
 
-#Newfeatures vars developer - Anshvachhani99 ✨🌸
+
 DIRECT_GEN_DB = int(os.environ.get("DIRECT_GEN_DB", "-1002323592481"))
 DIRECT_GEN_URL = os.environ.get("DIRECT_GEN_URL", "https://premiumbot.koyeb.app/")
 DIRECT_GEN = bool(DIRECT_GEN_DB and DIRECT_GEN_URL)
