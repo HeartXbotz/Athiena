@@ -1500,7 +1500,8 @@ async def purge_requests(client, message):
 import re
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from info import TARGET_CHANNELS  # Importing target channels from info.py
+from info import TARGET_CHANNELS, ADMINS, DIRECT_GEN_DB, HOW_TO_POST_SHORT
+from utilities import gen_link, get_size, short_link, clean_title, get_poster
 
 # Store user states
 user_states = {}
@@ -1512,11 +1513,15 @@ async def delete_previous_reply(chat_id):
         except Exception as e:
             print(f"Failed to delete message: {e}")
 
-
 @Client.on_message(filters.command("post") & filters.user(ADMINS))
 async def post_command(client, message):
     try:
-        await message.reply("**Wᴇʟᴄᴏᴍᴇ Tᴏ Usᴇ Oᴜʀ Rᴀʀᴇ Mᴏᴠɪᴇ Pᴏsᴛ Fᴇᴀᴛᴜʀᴇ:) Cᴏᴅᴇ ʙʏ [Hᴇᴀʀᴛ_Tʜɪᴇꜰ](https://t.me/HeartThieft_bot) 👨‍💻**\n\n**👉🏻Sᴇɴᴅ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴏғ ғɪʟᴇs ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ᴀᴅᴅ👈🏻**\n\n**‼️ Nᴏᴛᴇ : Oɴʟʏ ɴᴜᴍʙᴇʀ**", disable_web_page_preview=True)
+        await message.reply(
+            "**Welcome to the Rare Movie Post Feature!** 🎬\n\n"
+            "**👉🏻 Send the number of files you want to add. 👈🏻**\n"
+            "**‼️ Note: Only numbers are allowed.**",
+            disable_web_page_preview=True
+        )
         user_states[message.chat.id] = {"state": "awaiting_num_files"}
     except Exception as e:
         await message.reply(f"Error occurred: {e}")
@@ -1525,8 +1530,6 @@ async def post_command(client, message):
 async def handle_private_message(client, message):
     try:
         chat_id = message.chat.id
-
-        # Ensure previous reply is deleted if exists
         await delete_previous_reply(chat_id)
 
         if chat_id in user_states:
@@ -1593,8 +1596,10 @@ async def handle_private_message(client, message):
                 file_info = []
                 for i, file_id in enumerate(user_states[chat_id].get("file_ids", [])):
                     try:
-                        long_url = f"https://t.me/{temp.U_NAME}?start=file_{file_id}"
+                        long_url = f"https://t.me/{client.me.username}?start=file_{file_id}"
                         short_link_url = await short_link(long_url)
+                        if isinstance(short_link_url, tuple):  
+                            short_link_url = short_link_url[0]  # Fix tuple issue
                         file_size = user_states[chat_id]["file_sizes"][i]
                         file_info.append(f"》{file_size} : [Click Here]({short_link_url})")
                     except Exception as e:
@@ -1606,6 +1611,8 @@ async def handle_private_message(client, message):
                 for i, stream_link in enumerate(user_states[chat_id]["stream_links"]):
                     try:
                         short_stream_link_url = await short_link(stream_link)
+                        if isinstance(short_stream_link_url, tuple):  
+                            short_stream_link_url = short_stream_link_url[0]  # Fix tuple issue
                         stream_links_info.append(f"》{user_states[chat_id]['file_sizes'][i]} : [Click Here]({short_stream_link_url})")
                     except Exception as e:
                         print(f"Error shortening stream link: {e}")
@@ -1614,13 +1621,13 @@ async def handle_private_message(client, message):
 
                 summary_message = f"**🎬 {title} Tamil HDRip**\n\n" \
                                   f"**[ 360p☆480p☆Hevc☆720p☆1080p ]✌**\n\n" \
-                                  f"**𓆩🔻𓆪 Dɪʀᴇᴄᴛ Tᴇʟᴇɢʀᴀᴍ Fɪʟᴇs Oɴʟʏ👇**\n\n" \
+                                  f"**🔻 Direct Telegram Files:**\n\n" \
                                   f"{file_info_text}\n\n" \
-                                  f"**✅ Nᴏᴛᴇ : [Hᴏᴡ ᴛᴏ Dᴏᴡɴʟᴏᴀᴅ]({HOW_TO_POST_SHORT})👀**\n\n" \
-                                  f"**𓆩🔻𓆪 Sᴛʀᴇᴀᴍ/Fᴀsᴛ Dᴏᴡɴʟᴏᴀᴅ 👇**\n\n" \
+                                  f"**✅ [How to Download]({HOW_TO_POST_SHORT})**\n\n" \
+                                  f"**🔻 Stream/Fast Download:**\n\n" \
                                   f"{stream_links_text}\n\n" \
-                                  f"**Mᴏvɪᴇ Gʀᴏᴜᴘ 24/7 : @Roxy_Request_24_7**\n\n" \
-                                  f"**❤️‍🔥ー𖤍 𓆩 Sʜᴀʀᴇ Wɪᴛʜ Fʀɪᴇɴᴅs 𓆪 𖤍ー❤️‍🔥**"
+                                  f"**Movie Group: @Roxy_Request_24_7**\n\n" \
+                                  f"**❤️ Share with Friends ❤️**"
 
                 await send_channel_selection(message)
 
@@ -1644,13 +1651,12 @@ async def send_channel_selection(message):
         await message.delete()
     except Exception as e:
         print(f"Error in channel selection: {e}")
-        await message.reply("An error occurred while processing your request.")
 
 @Client.on_callback_query(filters.regex(r"post_(\S+)"))
 async def post_to_channel(client, callback_query):
     try:
         chat_id = callback_query.message.chat.id
-        channel_id = int(callback_query.data.split("_")[1])  # Convert to int
+        channel_id = int(callback_query.data.split("_")[1])
 
         summary_message = user_states[chat_id]["summary_message"]
         poster = user_states[chat_id].get("poster")
@@ -1660,12 +1666,11 @@ async def post_to_channel(client, callback_query):
         else:
             await client.send_message(channel_id, summary_message)
 
-        await callback_query.message.reply(f"✅ **Movie has been posted to {TARGET_CHANNELS[channel_id]}!**")
+        await callback_query.message.reply(f"✅ Movie has been posted to {TARGET_CHANNELS[channel_id]}!")
         await callback_query.message.delete()
 
         del user_states[chat_id]
 
     except Exception as e:
         print(f"Error posting to channel: {e}")
-        await callback_query.message.reply(f"Error occurred: {e}")
         
