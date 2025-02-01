@@ -162,7 +162,7 @@ if 'DYNO' in environ:
     ON_HEROKU = True
 else:
     ON_HEROKU = False
-URL = environ.get("URL", "https://premiumbot.koyeb.app/")
+URL = environ.get("URL", "https://athiena.koyeb.app/")
 
 
 # Rename Info : If True Then Bot Rename File Else Not
@@ -190,7 +190,7 @@ else:
 
 #------------------------- Generate Post code ---------------------------
 DIRECT_GEN_DB = int(os.environ.get("DIRECT_GEN_DB", "-1002323592481"))
-DIRECT_GEN_URL = os.environ.get("DIRECT_GEN_URL", "https://premiumbot.koyeb.app/")
+DIRECT_GEN_URL = os.environ.get("DIRECT_GEN_URL", "https://athiena.koyeb.app/")
 DIRECT_GEN = bool(DIRECT_GEN_DB and DIRECT_GEN_URL)
 
 POST_MODE= bool(environ.get('POST_MODE', True))
