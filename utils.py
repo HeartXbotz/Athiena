@@ -741,80 +741,101 @@ async def get_seconds(time_string):
 
 #POST FEATURES 
 
+import re
+from urllib.parse import quote_plus
+from pyrogram.types import Message
+from shortzy import Shortzy  # Ensure Shortzy is installed for URL shortening
+
+# Import required configurations
+from info import POST_MODE, POST_SHORT_API, POST_SHORT_URL, DIRECT_GEN_URL, user_states
+
+# Converts bytes to human-readable format (e.g., 1.2 GB, 500 MB)
 def humanbytes(size):
-    # https://stackoverflow.com/a/49361727/4723940
-    # 2**10 = 1024
     if not size:
-        return ""
+        return "0 B"
     power = 2**10
     n = 0
-    Dic_powerN = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
-    while size > power:
+    Dic_powerN = {0: 'B', 1: 'KiB', 2: 'MiB', 3: 'GiB', 4: 'TiB'}
+    
+    while size >= power and n < 4:
         size /= power
         n += 1
-    return f"{str(round(size, 2))} {Dic_powerN[n]}B"
+    
+    return f"{round(size, 2)} {Dic_powerN[n]}"
 
-def get_media_from_message(message: "Message") :
-    media_types = (
-        "audio",
-        "document",
-        "photo",
-        "sticker",
-        "animation",
-        "video",
-        "voice",
-        "video_note",
-    )
+# Extracts the media type from the message (photo, video, audio, etc.)
+def get_media_from_message(message: Message):
+    media_types = ("audio", "document", "photo", "sticker", "animation", "video", "voice", "video_note")
+    
     for attr in media_types:
         media = getattr(message, attr, None)
         if media:
             return media
-            
+    
+    return None  # Return None if no media is found
+
+# Cleans and formats the movie title by removing unnecessary parts
 def clean_title(title_clean):
-    # Regular expression to match the title and year with optional text afterwards
     match = re.match(r'^(.*?)(\d{4})(?:\s.*|$)', title_clean, re.IGNORECASE)
     if match:
-        
         title_cleaned = match.group(1).strip()
         year = match.group(2).strip()
-        return f"{title_cleaned.capitalize()} {year}"  
-    return title_clean 
+        return f"{title_cleaned.capitalize()} {year}"
+    return title_clean
 
+# Extracts the file name from a media message
 def get_name(media_msg: Message) -> str:
     media = get_media_from_message(media_msg)
-    return str(getattr(media, "file_name", "None"))
+    return str(getattr(media, "file_name", "Unknown_File"))  # Default to "Unknown_File" if missing
 
+# Gets the unique hash for the media file
 def get_hash(media_msg: Message) -> str:
     media = get_media_from_message(media_msg)
-    return getattr(media, "file_unique_id", "")[:6]
+    return getattr(media, "file_unique_id", "000000")[:6]  # Default hash if missing
 
+# Generates stream and page links for media
 async def gen_link(log_msg: Message):
-    """Generate Text for Stream Link, Reply Text and reply_markup
-    r : return page_link, stream_link
-    page_link : stream page link
-    stream_link : download link
     """
-    page_link = f"{DIRECT_GEN_URL}watch/{get_hash(log_msg)}{log_msg.id}"
-    stream_link = f"{DIRECT_GEN_URL}{log_msg.id}/{quote_plus(get_name(log_msg))}?hash={get_hash(log_msg)}"
-    # short    
-    return page_link, stream_link
+    Generates streaming and download links for a given Telegram message.
+    Returns: (page_link, stream_link)
+    """
+    msg_id = log_msg.id
+    file_hash = get_hash(log_msg)
+    file_name = quote_plus(get_name(log_msg))
 
+    page_link = f"{DIRECT_GEN_URL}watch/{file_hash}{msg_id}"
+    stream_link = f"{DIRECT_GEN_URL}{msg_id}/{file_name}?hash={file_hash}"
+
+    return page_link, stream_link  # Returns two separate strings instead of a tuple
+
+# Shortens a URL using a custom URL shortening service
 async def short_link(link):
+    """
+    Shortens a given link if POST_MODE is enabled.
+    """
     if not POST_MODE:
-        return link
-    # Replace the placeholders with your actual API key and base URL
-    api_key = POST_SHORT_API
-    base_site = POST_SHORT_URL
+        return link  # If shortener is disabled, return original link
 
-    if not (api_key and base_site):
-        return link
+    if not (POST_SHORT_API and POST_SHORT_URL):
+        return link  # Return original if API details are missing
 
-    shortzy = Shortzy(api_key, base_site)
-    short_link = await shortzy.convert(link)
+    try:
+        shortzy = Shortzy(POST_SHORT_API, POST_SHORT_URL)
+        short_link = await shortzy.convert(link)
 
-    return short_link
+        if isinstance(short_link, tuple):  # Fixes tuple response issue
+            short_link = short_link[0]
 
+        return short_link if short_link else link  # Return original if shortening fails
+    except Exception as e:
+        print(f"Shortening error: {e}")
+        return link  # Return original if an error occurs
+
+# Deletes the previous reply message (used for updating messages)
 async def delete_previous_reply(chat_id):
+    """
+    Deletes the user's previous reply message if exists.
+    """
     if chat_id in user_states and "last_reply" in user_states[chat_id]:
         try:
             await user_states[chat_id]["last_reply"].delete()
