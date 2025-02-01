@@ -1507,13 +1507,6 @@ from utils import gen_link, get_size, short_link, clean_title, get_poster
 # Store user states
 user_states = {}
 
-async def delete_previous_reply(chat_id):
-    if chat_id in user_states and "last_reply" in user_states[chat_id]:
-        try:
-            await user_states[chat_id]["last_reply"].delete()
-        except Exception as e:
-            print(f"Failed to delete message: {e}")
-
 @Client.on_message(filters.command("post") & filters.user(ADMINS))
 async def post_command(client, message):
     try:
