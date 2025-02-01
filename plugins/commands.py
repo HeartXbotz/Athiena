@@ -1496,12 +1496,13 @@ async def purge_requests(client, message):
             parse_mode=enums.ParseMode.MARKDOWN,
             disable_web_page_preview=True
         )
+#------------------------  Post Codes  ---------------------#
 
 import re
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from info import TARGET_CHANNELS, ADMINS, DIRECT_GEN_DB, HOW_TO_POST_SHORT
-from utilities import gen_link, get_size, short_link, clean_title, get_poster
+from utils import gen_link, get_size, short_link, clean_title, get_poster
 
 # Store user states
 user_states = {}
