@@ -151,11 +151,6 @@ QUALITIES = ["360p", "480p", "720p", "1080p", "1440p", "2160p"]
 YEARS = ["1900", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"]
 
 
-                           # Don't Remove Credit @VJ_Botz
-                           # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-                           # Ask Doubt on telegram @KingVJ01
-
-
 # Online Stream and Download
 STREAM_MODE = bool(environ.get('STREAM_MODE', True)) # Set True or False
 
@@ -193,7 +188,7 @@ else:
     FILE_DB_URI = F_DB_URI        # This Db Is For File Data Store
     SEC_FILE_DB_URI = S_DB_URI    # This Db is for File Data Store When First Db Is Going To Be Full.
 
-
+#------------------------- Generate Post code ---------------------------
 DIRECT_GEN_DB = int(os.environ.get("DIRECT_GEN_DB", "-1002323592481"))
 DIRECT_GEN_URL = os.environ.get("DIRECT_GEN_URL", "https://premiumbot.koyeb.app/")
 DIRECT_GEN = bool(DIRECT_GEN_DB and DIRECT_GEN_URL)
@@ -203,3 +198,10 @@ POST_SHORT_API = environ.get('POST_SHORT_API', '69bfe45fc35b6b3178b4b95de9ef1db1
 POST_SHORT_URL = environ.get('POST_SHORT_URL', 'modijiurl.com')
 
 HOW_TO_POST_SHORT = environ.get('HOW_TO_POST_SHORT', 'https://t.me/How_To_Get_Movie')
+
+TARGET_CHANNELS = {
+    "-1002181741528": "ᴛᴀᴍɪʟ ʜᴅ ᴍᴏᴠɪᴇꜱ",
+    "-1002249456764": "ʜᴏʟʟʏᴡᴏᴏᴅ",
+    "-1002383299674": "ᴡᴇʙ ꜱᴇʀɪᴇꜱ",
+    "-1002189755836": "ᴛʜᴇᴀᴛʀᴇ ᴘʀɪɴᴛ"
+}
