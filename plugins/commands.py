@@ -1493,44 +1493,9 @@ async def purge_requests(client, message):
             parse_mode=enums.ParseMode.MARKDOWN,
             disable_web_page_preview=True
         )
-#------------------------ Post Code -----------------------#
-impor    user_id  = message.from_user.id
-    if await db.has_premium_access(user_id):         
-        remaining_time = await db.check_remaining_uasge(user_id)             
-        expiry_time = remaining_time + datetime.datetime.now()
-        await message.reply_text(f"**Your plans details are :\n\nRemaining Time : {remaining_time}\n\nExpirytime : {expiry_time}**")
-    else:
-        btn = [ 
-            [InlineKeyboardButton("ɢᴇᴛ ғʀᴇᴇ ᴛʀᴀɪʟ ғᴏʀ 𝟻 ᴍɪɴᴜᴛᴇꜱ ☺️", callback_data="get_trail")],
-            [InlineKeyboardButton("ʙᴜʏ sᴜʙsᴄʀɪᴘᴛɪᴏɴ : ʀᴇᴍᴏᴠᴇ ᴀᴅs", callback_data="buy_premium")],
-            [InlineKeyboardButton("⚠️ ᴄʟᴏsᴇ / ᴅᴇʟᴇᴛᴇ ⚠️", callback_data="close_data")]
-        ]
-        reply_markup = InlineKeyboardMarkup(btn)
-        m=await message.reply_sticker("CAACAgIAAxkBAAIBTGVjQbHuhOiboQsDm35brLGyLQ28AAJ-GgACglXYSXgCrotQHjibHgQ")         
-        await message.reply_text(f"**😢 You Don't Have Any Premium Subscription.\n\n Check Out Our Premium /plan**",reply_markup=reply_markup)
-        await asyncio.sleep(2)
-        await m.delete()
-        
-       
-@Client.on_message(filters.command("totalrequests") & filters.private & filters.user(ADMINS))
-async def total_requests(client, message):
-    if join_db().isActive():
-        total = await join_db().get_all_users_count()
-        await message.reply_text(
-            text=f"Total Requests: {total}",
-            parse_mode=enums.ParseMode.MARKDOWN,
-            disable_web_page_preview=True
-        )
 
-@Client.on_message(filters.command("purgerequests") & filters.private & filters.user(ADMINS))
-async def purge_requests(client, message):   
-    if join_db().isActive():
-        await join_db().delete_all_users()
-        await message.reply_text(
-            text="Purged All Requests.",
-            parse_mode=enums.ParseMode.MARKDOWN,
-            disable_web_page_preview=True
-        )
+
+
 #------------------------ Post Code -----------------------#
 import re
 from pyrogram import Client, filters
