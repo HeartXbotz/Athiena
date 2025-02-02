@@ -1498,7 +1498,6 @@ async def purge_requests(client, message):
 
 #------------------------ Post Code -----------------------#
 
-
 import re
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -1656,6 +1655,9 @@ async def handle_private_message(client, message):
                 "poster": poster
             })
 
+    except Exception as e:
+        print(f"Error handling private message: {e}")
+
 @Client.on_callback_query(filters.regex(r"post_(\S+)"))
 async def post_to_channel(client, callback_query):
     """ Handles channel selection and posts the movie. """
@@ -1676,3 +1678,5 @@ async def post_to_channel(client, callback_query):
 
     except Exception as e:
         print(f"Error posting to channel: {e}")
+        
+
