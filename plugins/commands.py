@@ -1494,6 +1494,44 @@ async def purge_requests(client, message):
             disable_web_page_preview=True
         )
 #------------------------ Post Code -----------------------#
+impor    user_id  = message.from_user.id
+    if await db.has_premium_access(user_id):         
+        remaining_time = await db.check_remaining_uasge(user_id)             
+        expiry_time = remaining_time + datetime.datetime.now()
+        await message.reply_text(f"**Your plans details are :\n\nRemaining Time : {remaining_time}\n\nExpirytime : {expiry_time}**")
+    else:
+        btn = [ 
+            [InlineKeyboardButton("ɢᴇᴛ ғʀᴇᴇ ᴛʀᴀɪʟ ғᴏʀ 𝟻 ᴍɪɴᴜᴛᴇꜱ ☺️", callback_data="get_trail")],
+            [InlineKeyboardButton("ʙᴜʏ sᴜʙsᴄʀɪᴘᴛɪᴏɴ : ʀᴇᴍᴏᴠᴇ ᴀᴅs", callback_data="buy_premium")],
+            [InlineKeyboardButton("⚠️ ᴄʟᴏsᴇ / ᴅᴇʟᴇᴛᴇ ⚠️", callback_data="close_data")]
+        ]
+        reply_markup = InlineKeyboardMarkup(btn)
+        m=await message.reply_sticker("CAACAgIAAxkBAAIBTGVjQbHuhOiboQsDm35brLGyLQ28AAJ-GgACglXYSXgCrotQHjibHgQ")         
+        await message.reply_text(f"**😢 You Don't Have Any Premium Subscription.\n\n Check Out Our Premium /plan**",reply_markup=reply_markup)
+        await asyncio.sleep(2)
+        await m.delete()
+        
+       
+@Client.on_message(filters.command("totalrequests") & filters.private & filters.user(ADMINS))
+async def total_requests(client, message):
+    if join_db().isActive():
+        total = await join_db().get_all_users_count()
+        await message.reply_text(
+            text=f"Total Requests: {total}",
+            parse_mode=enums.ParseMode.MARKDOWN,
+            disable_web_page_preview=True
+        )
+
+@Client.on_message(filters.command("purgerequests") & filters.private & filters.user(ADMINS))
+async def purge_requests(client, message):   
+    if join_db().isActive():
+        await join_db().delete_all_users()
+        await message.reply_text(
+            text="Purged All Requests.",
+            parse_mode=enums.ParseMode.MARKDOWN,
+            disable_web_page_preview=True
+        )
+#------------------------ Post Code -----------------------#
 import re
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -1510,6 +1548,12 @@ async def delete_previous_reply(chat_id):
             await user_states[chat_id]["last_reply"].delete()
         except Exception as e:
             print(f"Failed to delete message: {e}")
+
+async def send_channel_selection(message):
+    """ Sends channel selection buttons. """
+    buttons = [[InlineKeyboardButton(text=name, callback_data=f"post_{chat_id}")] for chat_id, name in TARGET_CHANNELS.items()]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await message.reply("📢 Select a channel to post:", reply_markup=reply_markup)
 
 @Client.on_message(filters.command("post") & filters.user(ADMINS))
 async def post_command(client, message):
@@ -1639,12 +1683,6 @@ async def handle_private_message(client, message):
                     "summary_message": summary_message,
                     "poster": poster
                 })
-
-async def send_channel_selection(message):
-    """ Sends channel selection buttons. """
-    buttons = [[InlineKeyboardButton(text=name, callback_data=f"post_{chat_id}")] for chat_id, name in TARGET_CHANNELS.items()]
-    reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply("📢 Select a channel to post:", reply_markup=reply_markup)
 
 @Client.on_callback_query(filters.regex(r"post_(\S+)"))
 async def post_to_channel(client, callback_query):
