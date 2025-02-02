@@ -1,7 +1,3 @@
-# Don't Remove Credit @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
-
 import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64
 from Script import script
 from pyrogram import Client, filters, enums
@@ -1497,21 +1493,43 @@ async def purge_requests(client, message):
             parse_mode=enums.ParseMode.MARKDOWN,
             disable_web_page_preview=True
         )
-
+#------------------------ Post Code -----------------------#
 import re
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from info import TARGET_CHANNELS  # Importing target channels from info.py
+from info import TARGET_CHANNELS, ADMINS, DIRECT_GEN_DB, HOW_TO_POST_SHORT
+from utils import gen_link, get_size, short_link, clean_title, get_poster
 
 # Store user states
 user_states = {}
 
+async def delete_previous_reply(chat_id):
+    """ Deletes previous bot replies for cleaner UX. """
+    if chat_id in user_states and "last_reply" in user_states[chat_id]:
+        try:
+            await user_states[chat_id]["last_reply"].delete()
+        except Exception as e:
+            print(f"Failed to delete message: {e}")
+
+@Client.on_message(filters.command("post") & filters.user(ADMINS))
+async def post_command(client, message):
+    """ Handles the /post command to start movie posting. """
+    try:
+        user_states[message.chat.id] = {"state": "awaiting_num_files"}
+        await message.reply(
+            "**Welcome to the Rare Movie Post Feature!** 🎬\n\n"
+            "**👉🏻 Send the number of files you want to add. 👈🏻**\n"
+            "**‼️ Note: Only numbers are allowed.**",
+            disable_web_page_preview=True
+        )
+    except Exception as e:
+        await message.reply(f"Error occurred: {e}")
+
 @Client.on_message(filters.private & (filters.text | filters.media) & ~filters.command("post"))
 async def handle_private_message(client, message):
+    """ Handles user responses throughout the posting process. """
     try:
         chat_id = message.chat.id
-
-        # Ensure previous reply is deleted if exists
         await delete_previous_reply(chat_id)
 
         if chat_id in user_states:
@@ -1536,9 +1554,10 @@ async def handle_private_message(client, message):
                     reply_message = await message.reply("⏩ Forward the No: 1 file")
                     user_states[chat_id]["last_reply"] = reply_message
                 except ValueError:
-                    await message.reply("Invalid input. Please enter a valid number.")
+                    await message.reply("⚠️ Invalid input. Please enter a valid number.")
 
             elif current_state == "awaiting_files":
+                # Accept only photos and documents
                 if message.photo:
                     file_id = message.photo.file_id
                     size = get_size(message.photo.file_size)
@@ -1546,7 +1565,7 @@ async def handle_private_message(client, message):
                     file_id = message.document.file_id
                     size = get_size(message.document.file_size)
                 else:
-                    await message.reply("Unsupported file type.")
+                    await message.reply("⚠️ Unsupported file type. Send a document or photo.")
                     return
 
                 forwarded_message = await message.copy(chat_id=DIRECT_GEN_DB)
@@ -1562,15 +1581,18 @@ async def handle_private_message(client, message):
 
                 if num_files_left > 0:
                     reply_message = await message.reply(f"⏩ Forward the No: {files_received + 1} file")
-                    user_states[chat_id]["last_reply"] = reply_message
                 else:
-                    reply_message = await message.reply("**Now send the name of the movie (or) title**\n\n**Ex: Lover 2024 Tamil WebDL**")
+                    reply_message = await message.reply(
+                        "**✅ Now send the movie name/title**\n\n"
+                        "**Example: Lover 2024 Tamil WebDL**"
+                    )
                     user_states[chat_id]["state"] = "awaiting_title"
-                    user_states[chat_id]["last_reply"] = reply_message
+
+                user_states[chat_id]["last_reply"] = reply_message
 
             elif current_state == "awaiting_title":
                 title = message.text.strip()
-                cleaned_title = clean_title(re.sub(r"[(){}:;'!]", "", title))
+                cleaned_title = clean_title(re.sub(r"[(){}:;'!]", "", title))
 
                 imdb_data = await get_poster(cleaned_title)
                 poster = imdb_data.get('poster') if imdb_data else None
@@ -1578,8 +1600,9 @@ async def handle_private_message(client, message):
                 file_info = []
                 for i, file_id in enumerate(user_states[chat_id].get("file_ids", [])):
                     try:
-                        long_url = f"https://t.me/{temp.U_NAME}?start=file_{file_id}"
+                        long_url = f"https://t.me/{client.me.username}?start=file_{file_id}"
                         short_link_url = await short_link(long_url)
+                        short_link_url = short_link_url[0] if isinstance(short_link_url, tuple) else short_link_url
                         file_size = user_states[chat_id]["file_sizes"][i]
                         file_info.append(f"》{file_size} : [Click Here]({short_link_url})")
                     except Exception as e:
@@ -1591,51 +1614,44 @@ async def handle_private_message(client, message):
                 for i, stream_link in enumerate(user_states[chat_id]["stream_links"]):
                     try:
                         short_stream_link_url = await short_link(stream_link)
+                        short_stream_link_url = short_stream_link_url[0] if isinstance(short_stream_link_url, tuple) else short_stream_link_url
                         stream_links_info.append(f"》{user_states[chat_id]['file_sizes'][i]} : [Click Here]({short_stream_link_url})")
                     except Exception as e:
                         print(f"Error shortening stream link: {e}")
 
                 stream_links_text = "\n\n".join(stream_links_info)
 
-                summary_message = f"**🎬 {title} Tamil HDRip**\n\n" \
-                                  f"**[ 360p☆480p☆Hevc☆720p☆1080p ]✌**\n\n" \
-                                  f"**𓆩🔻𓆪 Dɪʀᴇᴄᴛ Tᴇʟᴇɢʀᴀᴍ Fɪʟᴇs Oɴʟʏ👇**\n\n" \
-                                  f"{file_info_text}\n\n" \
-                                  f"**✅ Nᴏᴛᴇ : [Hᴏᴡ ᴛᴏ Dᴏᴡɴʟᴏᴀᴅ]({HOW_TO_POST_SHORT})👀**\n\n" \
-                                  f"**𓆩🔻𓆪 Sᴛʀᴇᴀᴍ/Fᴀsᴛ Dᴏᴡɴʟᴏᴀᴅ 👇**\n\n" \
-                                  f"{stream_links_text}\n\n" \
-                                  f"**Mᴏvɪᴇ Gʀᴏᴜᴘ 24/7 : @Roxy_Request_24_7**\n\n" \
-                                  f"**❤️‍🔥ー𖤍 𓆩 Sʜᴀʀᴇ Wɪᴛʜ Fʀɪᴇɴᴅs 𓆪 𖤍ー❤️‍🔥**"
+                summary_message = (
+                    f"**🎬 {title} Tamil HDRip**\n\n"
+                    f"**[ 360p☆480p☆Hevc☆720p☆1080p ]✌**\n\n"
+                    f"**🔻 Direct Telegram Files:**\n\n"
+                    f"{file_info_text}\n\n"
+                    f"**✅ [How to Download]({HOW_TO_POST_SHORT})**\n\n"
+                    f"**🔻 Stream/Fast Download:**\n\n"
+                    f"{stream_links_text}\n\n"
+                    f"**Movie Group: @Roxy_Request_24_7**\n\n"
+                    f"**❤️ Share with Friends ❤️**"
+                )
 
                 await send_channel_selection(message)
 
                 user_states[chat_id].update({
                     "summary_message": summary_message,
-                    "poster": poster,
-                    "file_info_text": file_info_text,
-                    "stream_links_text": stream_links_text
+                    "poster": poster
                 })
 
-    except Exception as e:
-        print(f"Error: {e}")
-        await message.reply(f"Error occurred: {e}")
-
 async def send_channel_selection(message):
-    try:
-        buttons = [[InlineKeyboardButton(text=name, callback_data=f"post_{chat_id}")] for chat_id, name in TARGET_CHANNELS.items()]
-        reply_markup = InlineKeyboardMarkup(buttons)
-
-        await message.reply("Select a channel to post:", reply_markup=reply_markup)
-        await message.delete()
-    except Exception as e:
-        print(f"Error in channel selection: {e}")
-        await message.reply("An error occurred while processing your request.")
+    """ Sends channel selection buttons. """
+    buttons = [[InlineKeyboardButton(text=name, callback_data=f"post_{chat_id}")] for chat_id, name in TARGET_CHANNELS.items()]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await message.reply("📢 Select a channel to post:", reply_markup=reply_markup)
 
 @Client.on_callback_query(filters.regex(r"post_(\S+)"))
 async def post_to_channel(client, callback_query):
+    """ Handles channel selection and posts the movie. """
     try:
         chat_id = callback_query.message.chat.id
-        channel_id = int(callback_query.data.split("_")[1])  # Convert to int
+        channel_id = int(callback_query.data.split("_")[1])
 
         summary_message = user_states[chat_id]["summary_message"]
         poster = user_states[chat_id].get("poster")
@@ -1645,12 +1661,8 @@ async def post_to_channel(client, callback_query):
         else:
             await client.send_message(channel_id, summary_message)
 
-        await callback_query.message.reply(f"✅ **Movie has been posted to {TARGET_CHANNELS[channel_id]}!**")
-        await callback_query.message.delete()
-
-        del user_states[chat_id]
+        await callback_query.message.reply(f"✅ Movie has been posted to {TARGET_CHANNELS[channel_id]}!")
+        user_states.pop(chat_id, None)
 
     except Exception as e:
         print(f"Error posting to channel: {e}")
-        await callback_query.message.reply(f"Error occurred: {e}")
-        
